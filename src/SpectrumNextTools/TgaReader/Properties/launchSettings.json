@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "TgaReader": {
+      "commandName": "Project",
+      "commandLineArgs": "SpecBong.tga"
+    }
+  }
+}

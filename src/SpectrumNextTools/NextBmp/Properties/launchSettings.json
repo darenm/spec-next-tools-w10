@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "NextBmp": {
+      "commandName": "Project",
+      "commandLineArgs": "-std-palette -show-header blacksmith.bmp std-blacksmith.png"
+    }
+  }
+}
