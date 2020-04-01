@@ -32,6 +32,8 @@ namespace SpectrumNextTools.Library
             {
                 _inBitmap = new BitmapImage(_bmpOptions.InFileName);
                 _inBitmap.Validate();
+                _inBitmap.LoadPaletteAndImageData(_createNewFile, _updateImageData);
+                _inBitmap.UpdateColors(_bmpOptions.UseStdPalette, _bmpOptions.RoundingMode, _bmpOptions.MinimizePalette);
             }
             catch (FileNotFoundException)
             {
