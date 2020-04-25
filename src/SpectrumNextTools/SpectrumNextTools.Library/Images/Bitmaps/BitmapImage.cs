@@ -8,37 +8,77 @@ namespace SpectrumNextTools.Library.Images.Bitmaps
     public class BitmapImage
     {
         private readonly string _filename;
-
-        private readonly byte[] _palette = new byte[BitmapConstants.PaletteSize];
-        private readonly byte[] _minPalette = new byte[BitmapConstants.PaletteSize];
-        private readonly byte[] _minPaletteIndex = new byte[BitmapConstants.NumPaletteColors];
-        private readonly byte[] _stdPaletteIndex = new byte[BitmapConstants.NumPaletteColors];
-
         private BitmapHeader _bitmapHeader;
         private BitmapInformationHeader _bitmapInformationHeader;
         private uint _paletteOffset;
-        private readonly int _imageOffset;
-
-        private byte[] _image; // uninitalized
         private int _imageSize;
 
         public BitmapHeader Header => this._bitmapHeader;
 
         public BitmapInformationHeader InformationHeader => this._bitmapInformationHeader;
 
-        public byte[] Palette => this._palette;
+        public byte[] Palette { get; } = new byte[BitmapConstants.PaletteSize];
 
-        public byte[] MinPalette => this._minPalette;
+        public byte[] MinPalette { get; } = new byte[BitmapConstants.PaletteSize];
 
-        public byte[] MinPaletteIndex => this._minPaletteIndex;
+        public byte[] StdPaletteIndex { get; } = new byte[BitmapConstants.NumPaletteColors];
+        public byte[] MinPaletteIndex { get; } = new byte[BitmapConstants.NumPaletteColors];
 
-        public byte[] StdPaletteIndex => this._stdPaletteIndex;
-
-        public byte[] Image { get => this._image; private set => this._image = value; }
+        public byte[] Image { get; private set; }
 
         public BitmapImage(string filename)
         {
             _filename = filename;
+        }
+
+        internal void SaveAs(string outFileName)
+        {
+            try
+            {
+                File.Copy(_filename, outFileName, true);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Unable to copy {_filename} to {outFileName} - {ex.Message}", ex);
+            }
+
+            using (var fileStream = new FileStream(outFileName, FileMode.Open, FileAccess.ReadWrite))
+            {
+                SaveImage(fileStream);
+            }
+        }
+
+        internal void Save()
+        {
+            using (var fileStream = new FileStream(_filename, FileMode.Open, FileAccess.ReadWrite))
+            {
+                SaveImage(fileStream);
+            }
+        }
+
+        private void SaveImage(FileStream fileStream)
+        {
+            // Save palette data
+            try
+            {
+                fileStream.Seek(_paletteOffset, SeekOrigin.Begin);
+                fileStream.Write(Palette, 0, Palette.Length);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Unable to write BMP palette data for {_filename} - {ex.Message}", ex);
+            }
+
+            // Save bitmap data
+            try
+            {
+                fileStream.Seek(_bitmapHeader.ImageDataOffset, SeekOrigin.Begin);
+                fileStream.Write(Image, 0, Image.Length);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Unable to write BMP image data for {_filename} - {ex.Message}", ex);
+            }
         }
 
         public void Validate()
@@ -154,7 +194,7 @@ namespace SpectrumNextTools.Library.Images.Bitmaps
                         throw new Exception($"Can't access the BMP image data in file {_filename}.");
                     }
 
-                    if (fileStream.Read(_palette, 0, Palette.Length) != Palette.Length)
+                    if (fileStream.Read(Palette, 0, Palette.Length) != Palette.Length)
                     {
                         throw new Exception($"Can't read the BMP palette in file {_filename}.");
                     }
@@ -184,7 +224,10 @@ namespace SpectrumNextTools.Library.Images.Bitmaps
         {
             if (useStdPalette)
             {
+                // Convert the colors in the palette to the Spectrum Next standard palette RGB332 colors.
                 ConvertStandardPalette();
+
+                // Update the image pixels to use the new palette indexes of the standard palette colors.
                 for (int i = 0; i < _imageSize; i++)
                 {
                     Image[i] = StdPaletteIndex[Image[i]];
@@ -196,10 +239,25 @@ namespace SpectrumNextTools.Library.Images.Bitmaps
 
                 if (minimizePalette)
                 {
-                    // TODO
+                    // Minimize the converted palette by removing any duplicated colors and sort it
+                    // in ascending RGB order. Any unused palette entries at the end are set to 0 (black).
+                    byte[] minimizedPalette = CreateMinimizedPalette();
+
+                    // Create an index table containing the palette indexes of the minimized palette
+                    // that correspond to the palette indexes of the originally converted palette.
+                    CreateMinimizedPaletteIndexTable(minimizedPalette);
+
+                    minimizedPalette.CopyTo(Palette, 0);
+
+                    // Update the image pixels to use the palette indexes of the minimized palette.
+                    for (int i = 0; i < Image.Length; i++)
+                    {
+                        Image[i] = MinPaletteIndex[Image[i]];
+                    }
                 }
             }
 
+            // Convert the colors in the palette to the Spectrum Next standard palette RGB332 colors.
             void ConvertStandardPalette()
             {
                 // Update the colors in the palette.
@@ -271,6 +329,29 @@ namespace SpectrumNextTools.Library.Images.Bitmaps
                     Palette[i * 4 + 1] = g8;
                     Palette[i * 4 + 0] = b8;
                 }
+            }
+
+            void CreateMinimizedPaletteIndexTable(byte[] minimizedPalette)
+            {
+                for (int i = 0; i < BitmapConstants.NumPaletteColors; i++)
+                {
+                    for (int j = 0; j < BitmapConstants.NumPaletteColors; j++)
+                    {
+                        if (Palette[i] == minimizedPalette[i])
+                        {
+                            MinPaletteIndex[i] = (byte)j;
+                        }
+                    }
+                }
+            }
+
+            byte[] CreateMinimizedPalette()
+            {
+                var minPaletteColors = new byte[Palette.Length];
+                Palette.CopyTo(minPaletteColors, 0);
+                var bitmapPalette = new BitmapPalette(minPaletteColors);
+                minPaletteColors = bitmapPalette.Sort().RemoveDuplicates().ToArray();
+                return minPaletteColors;
             }
 
         }

@@ -34,14 +34,19 @@ namespace SpectrumNextTools.Library
                 _inBitmap.Validate();
                 _inBitmap.LoadPaletteAndImageData(_createNewFile, _updateImageData);
                 _inBitmap.UpdateColors(_bmpOptions.UseStdPalette, _bmpOptions.RoundingMode, _bmpOptions.MinimizePalette);
+
+                if (_createNewFile)
+                {
+                    _inBitmap.SaveAs(_bmpOptions.OutFileName);
+                }
+                else
+                {
+                    _inBitmap.Save();
+                }
             }
-            catch (FileNotFoundException)
+            catch(Exception ex)
             {
-                throw;
-            }
-            catch(Exception)
-            {
-                throw;
+                throw new Exception($"Failed to process BMP {_bmpOptions.InFileName} - {ex.Message}", ex);
             }
         }
     }

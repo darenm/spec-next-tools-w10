@@ -72,6 +72,13 @@ namespace SpectrumNextTools.Library.Images.Bitmaps
     |    36  |     4  |  Number of important colors in bytes.                      |
     |        |        |                                                            |
    ________________________________________________________________________________
+
+
+    Notes on Palette format
+
+        RGBA - so 4 bytes per entry
+
+
     */
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
     public struct BitmapHeader
