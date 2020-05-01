@@ -39,11 +39,15 @@ namespace SpecNextTiler.Controls
             }
         }
 
+#pragma warning disable CA1822 // Mark members as static - used in binding
         public string FormatIndex(int value)
+#pragma warning restore CA1822 // Mark members as static
         {
             return $"INDEX: {value:X2}";
         }
+#pragma warning disable CA1822 // Mark members as static - used in binding
         public string FormatOffset(int value)
+#pragma warning restore CA1822 // Mark members as static
         {
             var paletteOffset = value / 16;
             var colorIndex = value % 16;

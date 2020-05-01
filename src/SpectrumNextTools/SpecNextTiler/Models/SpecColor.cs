@@ -5,7 +5,9 @@ namespace SpecNextTiler.Models
 {
     public class SpecColor : ViewModelBase
     {
-        private byte r, g, b;
+        private readonly byte r;
+        private readonly byte g;
+        private readonly byte b;
 
         public byte EightBitColor { get; set; }
 
