@@ -1,0 +1,24 @@
+﻿<Page
+    x:Class="SpecNextColorConverter.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:SpecNextColorConverter"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <StackPanel Padding="12">
+
+        <TextBlock Text="Spectrum Next Color Converter" TextWrapping="Wrap" Style="{ThemeResource HeaderTextBlockStyle}"
+                   />
+        <TextBox x:Name="RGBInHex" Header="Enter RGB in HEX (no #)" PlaceholderText="FFFFFF" TextWrapping="Wrap" VerticalAlignment="Top"
+                 Margin="0,6"/>
+
+        <Button x:Name="Convert" Content="Convert" Margin="0,6" Click="Convert_Click"/>
+
+        <TextBox x:Name="Result" IsReadOnly="True" Header="Spectrum Palette" />
+
+
+    </StackPanel>
+</Page>

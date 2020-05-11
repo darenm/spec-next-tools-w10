@@ -153,8 +153,8 @@ namespace SpectrumNextTools.Library.Tests.Models
             var tile = new Tile(pixels);
             var actual = tile.ApplyTransform(rotate: false, mirrorX: false, mirrorY: false);
             CollectionAssert.AreEqual(expected, actual);
-            var matchTile = new Tile(actual);
 
+            var matchTile = new Tile(actual);
             var matchResult = tile.Match(matchTile, out TileOrientation tileOrientation);
             Assert.IsTrue(matchResult);
             Assert.IsTrue(!tileOrientation.Rotate && !tileOrientation.MirrorX && !tileOrientation.MirrorY);
@@ -190,6 +190,11 @@ namespace SpectrumNextTools.Library.Tests.Models
             var tile = new Tile(pixels);
             var actual = tile.ApplyTransform(rotate: true, mirrorX: false, mirrorY: false);
             CollectionAssert.AreEqual(expected, actual);
+
+            var matchTile = new Tile(actual);
+            var matchResult = tile.Match(matchTile, out TileOrientation tileOrientation);
+            Assert.IsTrue(matchResult);
+            Assert.IsTrue(tileOrientation.Rotate && !tileOrientation.MirrorX && !tileOrientation.MirrorY);
         }
 
         [TestMethod]
@@ -222,6 +227,11 @@ namespace SpectrumNextTools.Library.Tests.Models
             var tile = new Tile(pixels);
             var actual = tile.ApplyTransform(rotate: false, mirrorX: true, mirrorY: false);
             CollectionAssert.AreEqual(expected, actual);
+
+            var matchTile = new Tile(actual);
+            var matchResult = tile.Match(matchTile, out TileOrientation tileOrientation);
+            Assert.IsTrue(matchResult);
+            Assert.IsTrue(!tileOrientation.Rotate && tileOrientation.MirrorX && !tileOrientation.MirrorY);
         }
 
         [TestMethod]
@@ -254,6 +264,11 @@ namespace SpectrumNextTools.Library.Tests.Models
             var tile = new Tile(pixels);
             var actual = tile.ApplyTransform(rotate: false, mirrorX: true, mirrorY: true);
             CollectionAssert.AreEqual(expected, actual);
+
+            var matchTile = new Tile(actual);
+            var matchResult = tile.Match(matchTile, out TileOrientation tileOrientation);
+            Assert.IsTrue(matchResult);
+            Assert.IsTrue(!tileOrientation.Rotate && tileOrientation.MirrorX && tileOrientation.MirrorY);
         }
 
         [TestMethod]
@@ -286,6 +301,11 @@ namespace SpectrumNextTools.Library.Tests.Models
             var tile = new Tile(pixels);
             var actual = tile.ApplyTransform(rotate: true, mirrorX: true, mirrorY: false);
             CollectionAssert.AreEqual(expected, actual);
+
+            var matchTile = new Tile(actual);
+            var matchResult = tile.Match(matchTile, out TileOrientation tileOrientation);
+            Assert.IsTrue(matchResult);
+            Assert.IsTrue(tileOrientation.Rotate && tileOrientation.MirrorX && !tileOrientation.MirrorY);
         }
 
         [TestMethod]
@@ -317,6 +337,11 @@ namespace SpectrumNextTools.Library.Tests.Models
             var tile = new Tile(pixels);
             var actual = tile.ApplyTransform(rotate: false, mirrorX: false, mirrorY: true);
             CollectionAssert.AreEqual(expected, actual);
+
+            var matchTile = new Tile(actual);
+            var matchResult = tile.Match(matchTile, out TileOrientation tileOrientation);
+            Assert.IsTrue(matchResult);
+            Assert.IsTrue(!tileOrientation.Rotate && !tileOrientation.MirrorX && tileOrientation.MirrorY);
         }
 
         [TestMethod]
@@ -348,6 +373,11 @@ namespace SpectrumNextTools.Library.Tests.Models
             var tile = new Tile(pixels);
             var actual = tile.ApplyTransform(rotate: true, mirrorX: false, mirrorY: true);
             CollectionAssert.AreEqual(expected, actual);
+
+            var matchTile = new Tile(actual);
+            var matchResult = tile.Match(matchTile, out TileOrientation tileOrientation);
+            Assert.IsTrue(matchResult);
+            Assert.IsTrue(tileOrientation.Rotate && !tileOrientation.MirrorX && tileOrientation.MirrorY);
         }
 
         [TestMethod]
@@ -380,7 +410,11 @@ namespace SpectrumNextTools.Library.Tests.Models
             var tile = new Tile(pixels);
             var actual = tile.ApplyTransform(rotate: true, mirrorX: true, mirrorY: true);
             CollectionAssert.AreEqual(expected, actual);
-        }
 
+            var matchTile = new Tile(actual);
+            var matchResult = tile.Match(matchTile, out TileOrientation tileOrientation);
+            Assert.IsTrue(matchResult);
+            Assert.IsTrue(tileOrientation.Rotate && tileOrientation.MirrorX && tileOrientation.MirrorY);
+        }
     }
 }

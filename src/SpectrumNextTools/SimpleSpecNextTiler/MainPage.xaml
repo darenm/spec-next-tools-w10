@@ -1,18 +1,21 @@
 ﻿<Page
-    x:Class="SpecNextTiler.Views.MainPage"
+    x:Class="SimpleSpecNextTiler.MainPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:SpecNextTiler.Views"
+    xmlns:local="using:SimpleSpecNextTiler"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-    xmlns:models="using:SpecNextTiler.Models" 
     xmlns:controls="using:SpecNextTiler.Controls" 
-    xmlns:controls1="using:Microsoft.Toolkit.Uwp.UI.Controls"
+    xmlns:controls1="using:Microsoft.Toolkit.Uwp.UI.Controls" xmlns:viewmodel="using:SpecNextTiler.ViewModel"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-   <Grid>
-        <!--<controls1:DockPanel x:Name="TileDesigner" 
+    <Page.DataContext>
+        <viewmodel:MainPageViewModel/>
+    </Page.DataContext>
+
+    <Grid>
+        <controls1:DockPanel x:Name="TileDesigner" 
                           Background="LightGray" 
                           LastChildFill="True" 
                           Margin="2" 
@@ -26,7 +29,7 @@
             <Grid x:Name="PixelSurface">
                 <Image Source="{x:Bind ViewModel.TileSourceImage.SourceImage, Mode=OneWay}" />
             </Grid>
-        </controls1:DockPanel>-->
+        </controls1:DockPanel>
 
     </Grid>
 </Page>

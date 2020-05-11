@@ -145,8 +145,8 @@ namespace SpectrumNextTools.Library.Models
                 rotate = false;
                 mirrorX = true;
                 mirrorY = false;
-                mirrorXResult = MirrorXMatrix(inputTile.pixels, matrixDimension);
-                result = this.Equals(mirrorXResult);
+                mirrorXResult = MirrorXMatrix(this.pixels, matrixDimension);
+                result = MatchBytes(inputTile.pixels, mirrorXResult);
             }
 
             // R0 X0 Y1
@@ -155,8 +155,8 @@ namespace SpectrumNextTools.Library.Models
                 rotate = false;
                 mirrorX = false;
                 mirrorY = true;
-                var mirrorYResult = MirrorYMatrix(inputTile.pixels, matrixDimension);
-                result = this.Equals(mirrorYResult);
+                var mirrorYResult = MirrorYMatrix(this.pixels, matrixDimension);
+                result = MatchBytes(inputTile.pixels, mirrorYResult);
             }
 
             // R0 X1 Y1
@@ -167,7 +167,7 @@ namespace SpectrumNextTools.Library.Models
                 mirrorY = true;
                 // note: y mirror mirrorXResult
                 var mirrorYResult = MirrorYMatrix(mirrorXResult, matrixDimension);
-                result = this.Equals(mirrorYResult);
+                result = MatchBytes(inputTile.pixels, mirrorYResult);
             }
 
             // now we need to rotate
@@ -180,8 +180,8 @@ namespace SpectrumNextTools.Library.Models
                 mirrorX = false;
                 mirrorY = false;
 
-                rotateResult = RotateMatrix(inputTile.pixels, matrixDimension);
-                result = this.Equals(rotateResult);
+                rotateResult = RotateMatrix(this.pixels, matrixDimension);
+                result = MatchBytes(inputTile.pixels, rotateResult);
             }
 
             // R1 X1 Y0
@@ -192,7 +192,7 @@ namespace SpectrumNextTools.Library.Models
                 mirrorY = false;
                 // reuse rotate result
                 mirrorXResult = MirrorXMatrix(rotateResult, matrixDimension);
-                result = this.Equals(mirrorXResult);
+                result = MatchBytes(inputTile.pixels, mirrorXResult);
             }
 
             // R1 X0 Y1
@@ -204,7 +204,7 @@ namespace SpectrumNextTools.Library.Models
 
                 // reuse rotate result
                 var mirrorYResult = MirrorYMatrix(rotateResult, matrixDimension);
-                result = this.Equals(mirrorYResult);
+                result = MatchBytes(inputTile.pixels, mirrorYResult);
             }
 
             // R1 X1 Y1
@@ -216,7 +216,7 @@ namespace SpectrumNextTools.Library.Models
 
                 // note: y mirror mirrorXResult
                 var mirrorYResult = MirrorYMatrix(mirrorXResult, matrixDimension);
-                result = this.Equals(mirrorYResult);
+                result = MatchBytes(inputTile.pixels, mirrorYResult);
             }
 
             tileOrientation = new TileOrientation(rotate, mirrorX, mirrorY);
@@ -266,11 +266,16 @@ namespace SpectrumNextTools.Library.Models
                 return false;
             }
 
+            return MatchBytes(this.pixels, other.pixels);
+        }
+
+        private static bool MatchBytes(byte[,] array1, byte[,] array2)
+        {
             for (int row = 0; row < matrixDimension; row++)
             {
                 for (int column = 0; column < matrixDimension; column++)
                 {
-                    if (pixels[row, column] != other.pixels[row, column])
+                    if (array1[row, column] != array2[row, column])
                     {
                         return false;
                     }

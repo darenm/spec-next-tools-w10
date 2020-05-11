@@ -4,10 +4,8 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Prism.Mvvm;
+using SimpleSpecNextTiler.ViewModels;
 using SpecNextTiler.Models;
-using Template10.Mvvm;
-using Template10.Navigation;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 
@@ -15,16 +13,6 @@ namespace SpecNextTiler.ViewModel
 {
     public class MainPageViewModel : ViewModelBase
     {
-        public override void OnNavigatedTo(INavigationParameters parameters)
-        {
-            Title = "Hello run-time world.";
-        }
-
-        public override void OnNavigatedFrom(INavigationParameters parameters)
-        {
-            // empty
-        }
-
         private string _title;
         public string Title
         {
