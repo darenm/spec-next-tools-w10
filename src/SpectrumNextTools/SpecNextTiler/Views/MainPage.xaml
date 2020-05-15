@@ -12,7 +12,7 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
    <Grid>
-        <!--<controls1:DockPanel x:Name="TileDesigner" 
+        <controls1:DockPanel x:Name="TileDesigner" 
                           Background="LightGray" 
                           LastChildFill="True" 
                           Margin="2" 
@@ -24,9 +24,10 @@
                 <Button Content="Open Tile Source" VerticalAlignment="Top" Click="{x:Bind ViewModel.OpenTileImage}"/>
             </Grid>
             <Grid x:Name="PixelSurface">
+                <!--<Image Source="/Assets/Level1.bmp" />-->
                 <Image Source="{x:Bind ViewModel.TileSourceImage.SourceImage, Mode=OneWay}" />
             </Grid>
-        </controls1:DockPanel>-->
+        </controls1:DockPanel>
 
     </Grid>
 </Page>

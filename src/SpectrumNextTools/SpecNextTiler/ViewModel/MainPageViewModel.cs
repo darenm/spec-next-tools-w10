@@ -62,6 +62,7 @@ namespace SpecNextTiler.ViewModel
             };
             openPicker.FileTypeFilter.Add(".jpg");
             openPicker.FileTypeFilter.Add(".jpeg");
+            openPicker.FileTypeFilter.Add(".bmp");
             openPicker.FileTypeFilter.Add(".png");
 
             StorageFile file = await openPicker.PickSingleFileAsync();
