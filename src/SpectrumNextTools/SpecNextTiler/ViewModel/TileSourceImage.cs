@@ -1,6 +1,8 @@
 ﻿using SpectrumNextTools.Library.Models;
+using SpectrumNextTools.Library.Palettes;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -19,15 +21,11 @@ namespace SpecNextTiler.ViewModel
     public class TileSourceImage : ViewModelBase
     {
         private WriteableBitmap sourceImage;
-        private List<Tile> tiles;
 
         public TileSourceImage()
         {
             // Test image for binding
             SourceImage = BitmapFactory.New(512, 512);
-            // Closed green polyline with P1(10, 5), P2(20, 40), P3(30, 30) and P4(7, 8)
-            int[] p = new int[] { 10, 5, 20, 40, 30, 30, 7, 8, 10, 5 };
-            SourceImage.DrawPolyline(p, Colors.Green);
         }
 
         public WriteableBitmap SourceImage
@@ -35,6 +33,8 @@ namespace SpecNextTiler.ViewModel
             get => sourceImage;
             set => SetProperty(ref sourceImage, value);
         }
+        public List<Tile> Tiles { get; set; }
+        public TileMap TileMap { get; set; }
 
         // need to load image from file
 
@@ -79,37 +79,101 @@ namespace SpecNextTiler.ViewModel
                 // Set the source of the Image control
                 SourceImage = bitmap;
                 Tileate();
+                DeDupTiles();
+            }
+        }
+
+        private void DeDupTiles()
+        {
+            // move index to the tile to check for duplicates
+            var currentTileIndex = 0;
+
+            // if there are more tiles
+            while(currentTileIndex < Tiles.Count -1)
+            {
+                var currentTile = Tiles[currentTileIndex];
+
+                // iterate through the remain tiles to find matches
+                for (int i = currentTileIndex + 1; i < Tiles.Count; i++)
+                {
+                    var compareTile = Tiles[i];
+                    if (currentTile.Match(compareTile, out TileOrientation orientation))
+                    {
+                        TileMap.ReplaceTilesByTileIndex(i, currentTileIndex, orientation);
+                    }
+                }
+                currentTileIndex++;
             }
 
+            // rebuild Tiles from the updated TileMap
+            // Tile order is based upon order of incidence in TileMap
+            // also have to  update the TileMap as we go to reference new
+            // indexes
 
-            //using (var fs = await storageFile.OpenStreamForReadAsync())
+            //var newTiles = new List<Tile>();
+
+            //for (int row = 0; row < TileMap.Height; row++)
             //{
-            //    await OpenFromStream(fs);
+            //    for (int column = 0; column < TileMap.Width; column++)
+            //    {
+            //        var tileMapEntry = TileMap[row, column];
+            //        if (tileMapEntry.Index >= newTiles.Count)
+            //        {
+            //            // we haven't added the tile to the new list
+            //            var newIndex = newTiles.Count;
+            //            var oldIndex = tileMapEntry.Index;
+            //            var orientation = tileMapEntry.Orientation;
+            //            newTiles.Add(Tiles[tileMapEntry.Index]);
+            //            TileMap.ReplaceTilesByTileIndex(oldIndex, newIndex, orientation);
+            //        }
+            //    }
             //}
+
+            //Tiles = newTiles;
         }
 
         private void Tileate()
         {
             byte[] pixels = SourceImage.PixelBuffer.ToArray();
             // pixels are in BGRA
-            this.tiles = new List<Tile>();
+            this.Tiles = new List<Tile>();
 
             // there are 4 bytes per pixel...
             var tileWidth = SourceImage.PixelWidth / 8;
             var tileHeight = SourceImage.PixelHeight / 8;
-            for (var column = 0; column < tileWidth; column++)
+            TileMap = new TileMap(tileWidth, tileHeight);
+
+            for (var row = 0; row < tileHeight; row++)
             {
-                for (var row = 0; row < tileHeight; column++)
+                for (var column = 0; column < tileWidth; column++)
                 {
                     var startX = column * 8 * 4;
-                    var startY = row * 8;
+                    var startY = row * 8 * SourceImage.PixelWidth * 4;
+                    var offset = startX + startY;
                     var tileBytes = new byte[8, 8];
                     for (int y = 0; y < 8; y++)
-                        for (int x = 0; x < 8; x++)
+                        for (int x = 0; x < 8 * 4; x += 4)
                         {
-                            tileBytes[y, x] = pixels[(startY * SourceImage.PixelWidth) + y + startX + x];
+                            var localOffset = x + (y * SourceImage.PixelWidth * 4);
+                            byte b = pixels[offset + localOffset];
+                            byte g = pixels[offset + localOffset + 1];
+                            byte r = pixels[offset + localOffset + 2];
+                            byte a = pixels[offset + localOffset + 3];
+                            tileBytes[y, x / 4] = SpectrumColorConverter.ConvertFromBgra(b, g, r, a);
                         }
-                    tiles.Add(new Tile(tileBytes));
+
+                    var tile = new Tile(tileBytes);
+                    int index;
+                    if (Tiles.Contains(tile))
+                    {
+                        index = Tiles.IndexOf(tile);
+                    }
+                    else
+                    {
+                        Tiles.Add(new Tile(tileBytes));
+                        index = Tiles.Count - 1;
+                    }
+                    TileMap.PlaceTile(row, column, index);
                 }
             }
         }

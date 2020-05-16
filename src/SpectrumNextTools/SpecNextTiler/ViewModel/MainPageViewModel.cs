@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Prism.Mvvm;
 using SpecNextTiler.Models;
+using SpectrumNextTools.Library.Models;
 using Template10.Mvvm;
 using Template10.Navigation;
 using Windows.Storage;
@@ -15,6 +16,8 @@ namespace SpecNextTiler.ViewModel
 {
     public class MainPageViewModel : ViewModelBase
     {
+        private int _tileIndex = 0;
+
         public override void OnNavigatedTo(INavigationParameters parameters)
         {
             Title = "Hello run-time world.";
@@ -37,6 +40,13 @@ namespace SpecNextTiler.ViewModel
         {
             get => _tileSourceImage;
             set => SetProperty(ref _tileSourceImage, value);
+        }
+
+        private Tile _tile;
+        public Tile Tile
+        {
+            get => _tile;
+            set => SetProperty(ref _tile, value);
         }
 
 
@@ -73,6 +83,19 @@ namespace SpecNextTiler.ViewModel
                 await TileSourceImage.LoadImageFromFileAsync(file);
             }
 
+        }
+
+        public void ShowTileOne()
+        {
+            if (TileSourceImage.Tiles != null && TileSourceImage.Tiles.Count > 0)
+            {
+                if (_tileIndex >= TileSourceImage.Tiles.Count)
+                {
+                    _tileIndex = 0;
+                }
+                Tile = TileSourceImage.Tiles[_tileIndex];
+                _tileIndex++;
+            }
         }
     }
 }

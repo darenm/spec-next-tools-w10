@@ -1,9 +1,11 @@
-﻿using SpecNextTiler.ViewModel;
+﻿using Microsoft.Toolkit.Uwp.UI.Controls;
+using SpecNextTiler.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
@@ -27,6 +29,58 @@ namespace SpecNextTiler.Views
         public MainPage()
         {
             this.InitializeComponent();
+        }
+
+        private async void ShowTiles(object sender, RoutedEventArgs e)
+        {
+            await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+            {
+                WrapPanel.Children.Clear();
+
+                foreach (var tile in ViewModel.TileSourceImage.Tiles)
+                {
+                    var tc = new Controls.TileControl();
+                    tc.Tile = tile;
+                    WrapPanel.Children.Add(tc);
+                }
+            });
+
+        }
+
+        private async void ShowTileMap(object sender, RoutedEventArgs e)
+        {
+            await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+            {
+                WrapPanel.Children.Clear();
+
+                var tileMap = ViewModel.TileSourceImage.TileMap;
+
+                for (int row = 0; row < tileMap.Height; row++)
+                {
+                    for (int column = 0; column < tileMap.Width; column++)
+                    {
+                        var tc = new Controls.TileControl();
+                        var tileMapEntry = tileMap[row, column];
+                        tc.Tile = ViewModel.TileSourceImage.Tiles[tileMapEntry.Index];
+                        tc.Orientation = tileMapEntry.Orientation;
+                        WrapPanel.Children.Add(tc);
+                    }
+                }
+            });
+        }
+
+        private void ToggleButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is ToggleButton tb)
+            {
+                foreach (var child in WrapPanel.Children)
+                {
+                    if (child is Controls.TileControl tc)
+                    {
+                        tc.ApplyOrientation = tb.IsChecked.HasValue? tb.IsChecked.Value : false;
+                    }
+                }
+            }
         }
     }
 }

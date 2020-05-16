@@ -122,6 +122,9 @@
     <Compile Include="Controls\PaletteControl.xaml.cs">
       <DependentUpon>PaletteControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\TileControl.xaml.cs">
+      <DependentUpon>TileControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Models\PaletteColor.cs" />
     <Compile Include="Models\SpecBase256Palette.cs" />
     <Compile Include="Models\SpecColor.cs" />
@@ -191,6 +194,10 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="Controls\PaletteControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\TileControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

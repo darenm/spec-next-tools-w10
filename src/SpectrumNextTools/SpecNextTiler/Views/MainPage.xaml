@@ -20,12 +20,29 @@
             <Grid Width="260" controls1:DockPanel.Dock="Right" Padding="12">
                 <controls:PaletteControl/>
             </Grid>
-            <Grid Width="250" controls1:DockPanel.Dock="Left" Padding="12">
-                <Button Content="Open Tile Source" VerticalAlignment="Top" Click="{x:Bind ViewModel.OpenTileImage}"/>
+            <Grid Width="250" controls1:DockPanel.Dock="Left" Padding="6">
+                <StackPanel>
+                    <StackPanel.Resources>
+                        <Style TargetType="Button">
+                            <Setter Property="Margin" Value="6" />
+                        </Style>
+                        <Style TargetType="ToggleButton">
+                            <Setter Property="Margin" Value="6" />
+                        </Style>
+                    </StackPanel.Resources>
+                    <Button Content="Open Tile Source" VerticalAlignment="Top" Click="{x:Bind ViewModel.OpenTileImage}"/>
+                    <Button Content="Show Tiles" VerticalAlignment="Top" Click="ShowTiles" />
+                    <Button Content="Show Tile Map" VerticalAlignment="Top" Click="ShowTileMap" />
+                    <ToggleButton Content="Apply Orientation" Click="ToggleButton_Click" IsChecked="True" />
+                </StackPanel>
             </Grid>
             <Grid x:Name="PixelSurface">
-                <!--<Image Source="/Assets/Level1.bmp" />-->
-                <Image Source="{x:Bind ViewModel.TileSourceImage.SourceImage, Mode=OneWay}" />
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Image Source="{x:Bind ViewModel.TileSourceImage.SourceImage, Mode=OneWay}" Stretch="None" />
+                <controls1:WrapPanel Grid.Row="1" x:Name="WrapPanel" Width="480"/>
             </Grid>
         </controls1:DockPanel>
 
