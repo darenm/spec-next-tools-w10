@@ -93,7 +93,7 @@ namespace SpecNextTiler.ViewModel
             {
                 var currentTile = Tiles[currentTileIndex];
 
-                // iterate through the remain tiles to find matches
+                // iterate through the remaining tiles to find matches
                 for (int i = currentTileIndex + 1; i < Tiles.Count; i++)
                 {
                     var compareTile = Tiles[i];
@@ -110,26 +110,25 @@ namespace SpecNextTiler.ViewModel
             // also have to  update the TileMap as we go to reference new
             // indexes
 
-            //var newTiles = new List<Tile>();
+            var newTiles = new List<Tile>();
 
-            //for (int row = 0; row < TileMap.Height; row++)
-            //{
-            //    for (int column = 0; column < TileMap.Width; column++)
-            //    {
-            //        var tileMapEntry = TileMap[row, column];
-            //        if (tileMapEntry.Index >= newTiles.Count)
-            //        {
-            //            // we haven't added the tile to the new list
-            //            var newIndex = newTiles.Count;
-            //            var oldIndex = tileMapEntry.Index;
-            //            var orientation = tileMapEntry.Orientation;
-            //            newTiles.Add(Tiles[tileMapEntry.Index]);
-            //            TileMap.ReplaceTilesByTileIndex(oldIndex, newIndex, orientation);
-            //        }
-            //    }
-            //}
+            for (int row = 0; row < TileMap.Height; row++)
+            {
+                for (int column = 0; column < TileMap.Width; column++)
+                {
+                    var tileMapEntry = TileMap[row, column];
+                    if (tileMapEntry.Index >= newTiles.Count)
+                    {
+                        // we haven't added the tile to the new list
+                        var newIndex = newTiles.Count;
+                        var oldIndex = tileMapEntry.Index;
+                        newTiles.Add(Tiles[tileMapEntry.Index]);
+                        TileMap.UpdateTileIndex(oldIndex, newIndex);
+                    }
+                }
+            }
 
-            //Tiles = newTiles;
+            Tiles = newTiles;
         }
 
         private void Tileate()

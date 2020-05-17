@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq.Expressions;
-using System.Text;
+﻿using System.Diagnostics;
+using System.Linq;
 
 namespace SpectrumNextTools.Library.Models
 {
@@ -43,6 +41,11 @@ namespace SpectrumNextTools.Library.Models
 
         public void ReplaceTilesByTileIndex(int oldTileIndex, int newTileIndex, TileOrientation orientation)
         {
+            if (oldTileIndex == newTileIndex)
+            {
+                return;
+            }
+
             for (int row = 0; row < Height; row++)
             {
                 for (int column = 0; column < Width; column++)
@@ -54,7 +57,26 @@ namespace SpectrumNextTools.Library.Models
                 }
             }
         }
-        
+        public void UpdateTileIndex(int oldTileIndex, int newTileIndex)
+        {
+            if (oldTileIndex == newTileIndex)
+            {
+                return;
+            }
+
+            for (int row = 0; row < Height; row++)
+            {
+                for (int column = 0; column < Width; column++)
+                {
+                    if (_tiles[row, column].Index == oldTileIndex)
+                    {
+                        var orientation = _tiles[row, column].Orientation;
+                        _tiles[row, column] = new TileMapEntry(newTileIndex, orientation);
+                    }
+                }
+            }
+        }
+
     }
 
     public class TileMapEntry

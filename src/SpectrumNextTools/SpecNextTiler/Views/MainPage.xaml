@@ -39,10 +39,16 @@
             <Grid x:Name="PixelSurface">
                 <Grid.RowDefinitions>
                     <RowDefinition/>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition/>
                 </Grid.RowDefinitions>
-                <Image Source="{x:Bind ViewModel.TileSourceImage.SourceImage, Mode=OneWay}" Stretch="None" />
-                <controls1:WrapPanel Grid.Row="1" x:Name="WrapPanel" Width="480"/>
+                <ScrollViewer ZoomMode="Enabled">
+                    <Image Source="{x:Bind ViewModel.TileSourceImage.SourceImage, Mode=OneWay}" Stretch="None" />
+                </ScrollViewer>
+                <controls1:GridSplitter Grid.Row="1"/>
+                <ScrollViewer Grid.Row="2" ZoomMode="Enabled">
+                    <controls1:WrapPanel UseLayoutRounding="False" x:Name="WrapPanel" Width="480" VerticalAlignment="Center"/>
+                </ScrollViewer>
             </Grid>
         </controls1:DockPanel>
 
