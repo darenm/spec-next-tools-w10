@@ -1,4 +1,5 @@
-﻿using SpectrumNextTools.Library.Models;
+﻿using SpecNextTiler.Models;
+using SpectrumNextTools.Library.Models;
 using SpectrumNextTools.Library.Palettes;
 using System;
 using System.Collections.Generic;
@@ -33,8 +34,9 @@ namespace SpecNextTiler.ViewModel
             get => sourceImage;
             set => SetProperty(ref sourceImage, value);
         }
-        public List<Tile> Tiles { get; set; }
-        public TileMap TileMap { get; set; }
+        public List<Tile> Tiles { get; private set; }
+        public TileMap TileMap { get; private set; }
+        public List<SpecColor> SortedColors { get; private set; }
 
         // need to load image from file
 
@@ -80,6 +82,30 @@ namespace SpecNextTiler.ViewModel
                 SourceImage = bitmap;
                 Tileate();
                 DeDupTiles();
+                ExtractPalette();
+            }
+        }
+
+        private void ExtractPalette()
+        {
+            var uniqueColors = new List<byte>();
+
+            foreach (var tile in Tiles)
+            {
+                foreach (var pixel in tile.Pixels)
+                {
+                    if (!uniqueColors.Contains(pixel))
+                    {
+                        uniqueColors.Add(pixel);
+                    }
+                }
+            }
+
+            var sortedColors = uniqueColors.OrderBy(b => b).ToArray();
+            SortedColors = new List<SpecColor>(sortedColors.Length);
+            foreach (var color in sortedColors)
+            {
+                SortedColors.Add(new SpecColor(color));
             }
         }
 

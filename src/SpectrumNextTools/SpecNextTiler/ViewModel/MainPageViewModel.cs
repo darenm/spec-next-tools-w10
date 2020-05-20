@@ -81,6 +81,15 @@ namespace SpecNextTiler.ViewModel
                 // Application now has read/write access to the picked file
                 TileSourceImage = new TileSourceImage();
                 await TileSourceImage.LoadImageFromFileAsync(file);
+                var index = 0;
+                foreach (var color in TileSourceImage.SortedColors)
+                {
+                    Colors[index++] = color;
+                }
+                while(index < 256)
+                {
+                    Colors[index++] = new SpecColor();
+                }
             }
 
         }

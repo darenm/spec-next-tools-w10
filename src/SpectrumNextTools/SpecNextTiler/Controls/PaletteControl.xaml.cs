@@ -17,7 +17,11 @@ namespace SpecNextTiler.Controls
         public ObservableCollection<SpecColor> Colors
         {
             get => this.colors;
-            set => this.colors = value;
+            set
+            {
+                this.colors = value;
+                this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Colors)));
+            }
         }
         public PaletteControl()
         {

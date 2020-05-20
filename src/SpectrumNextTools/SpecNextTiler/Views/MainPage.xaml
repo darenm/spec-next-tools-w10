@@ -18,7 +18,7 @@
                           Margin="2" 
                           Padding="0,0,0,0">
             <Grid Width="260" controls1:DockPanel.Dock="Right" Padding="12">
-                <controls:PaletteControl/>
+                <controls:PaletteControl Colors="{x:Bind ViewModel.Colors, Mode=OneWay}"/>
             </Grid>
             <Grid Width="250" controls1:DockPanel.Dock="Left" Padding="6">
                 <StackPanel>

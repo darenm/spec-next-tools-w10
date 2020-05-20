@@ -36,6 +36,12 @@ namespace SpectrumNextTools.Library.Palettes
             return int.Parse(hex, System.Globalization.NumberStyles.AllowHexSpecifier);
         }
 
+        public static byte ConvertFromBgr(byte b, byte g, byte r)
+        {
+            return ConvertFromBgra(b, g, r, 255);
+        }
+
+
         public static byte ConvertFromBgra(byte b, byte g, byte r, byte a)
         {
             // we ignore a
