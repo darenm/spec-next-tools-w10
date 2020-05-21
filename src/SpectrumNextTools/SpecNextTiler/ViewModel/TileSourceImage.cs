@@ -36,7 +36,7 @@ namespace SpecNextTiler.ViewModel
         }
         public List<Tile> Tiles { get; private set; }
         public TileMap TileMap { get; private set; }
-        public List<SpecColor> SortedColors { get; private set; }
+        public List<WinSpecColor> SortedColors { get; private set; }
 
         // need to load image from file
 
@@ -69,14 +69,7 @@ namespace SpecNextTiler.ViewModel
                 }
 
                 WriteableBitmap bitmap = new WriteableBitmap(softwareBitmap.PixelWidth, softwareBitmap.PixelHeight);
-                try
-                {
-                    softwareBitmap.CopyToBuffer(bitmap.PixelBuffer);
-                }
-                catch (Exception ex)
-                {
-                    var m = ex.Message;
-                }
+                softwareBitmap.CopyToBuffer(bitmap.PixelBuffer);
 
                 // Set the source of the Image control
                 SourceImage = bitmap;
@@ -101,11 +94,11 @@ namespace SpecNextTiler.ViewModel
                 }
             }
 
-            var sortedColors = uniqueColors.OrderBy(b => b).ToArray();
-            SortedColors = new List<SpecColor>(sortedColors.Length);
-            foreach (var color in sortedColors)
+            //var sortedColors = uniqueColors.OrderBy(b => b).ToArray();
+            SortedColors = new List<WinSpecColor>(uniqueColors.Count);
+            foreach (var color in uniqueColors)
             {
-                SortedColors.Add(new SpecColor(color));
+                SortedColors.Add(new WinSpecColor(color));
             }
         }
 
@@ -183,8 +176,9 @@ namespace SpecNextTiler.ViewModel
                             byte b = pixels[offset + localOffset];
                             byte g = pixels[offset + localOffset + 1];
                             byte r = pixels[offset + localOffset + 2];
-                            byte a = pixels[offset + localOffset + 3];
-                            tileBytes[y, x / 4] = SpectrumColorConverter.ConvertFromBgra(b, g, r, a);
+                            // we ignore the a
+                            // byte a = pixels[offset + localOffset + 3];
+                            tileBytes[y, x / 4] = SpectrumColorConverter.EightBitFromBgr(b, g, r);
                         }
 
                     var tile = new Tile(tileBytes);
@@ -207,9 +201,5 @@ namespace SpecNextTiler.ViewModel
         {
             SourceImage = await BitmapFactory.FromStream(s, BitmapPixelFormat.Rgba8);
         }
-
-        // need to get palette from image
-
-        // need to palettize the image
     }
 }

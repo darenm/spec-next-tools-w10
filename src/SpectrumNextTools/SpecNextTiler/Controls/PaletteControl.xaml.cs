@@ -3,6 +3,8 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using Template10.Mvvm;
 using Windows.UI.Xaml.Controls;
+using Windows.ApplicationModel.DataTransfer;
+using System.Text;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -10,11 +12,11 @@ namespace SpecNextTiler.Controls
 {
     public sealed partial class PaletteControl : UserControl, INotifyPropertyChanged
     {
-        private ObservableCollection<SpecColor> colors = new ObservableCollection<SpecColor>(SpecBase256Palette.Colors);
+        private ObservableCollection<WinSpecColor> colors = new ObservableCollection<WinSpecColor>(SpecBase256Palette.Colors);
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public ObservableCollection<SpecColor> Colors
+        public ObservableCollection<WinSpecColor> Colors
         {
             get => this.colors;
             set
@@ -29,8 +31,8 @@ namespace SpecNextTiler.Controls
             this.SelectedColor = Colors[0];
         }
 
-        private SpecColor selectedColor;
-        public SpecColor SelectedColor
+        private WinSpecColor selectedColor;
+        public WinSpecColor SelectedColor
         {
             get => this.selectedColor;
             set
@@ -56,6 +58,30 @@ namespace SpecNextTiler.Controls
             var paletteOffset = value / 16;
             var colorIndex = value % 16;
             return $"Off: {paletteOffset:X2} Ind: {colorIndex:X2}";
+        }
+
+        private void Export8BitColorAsm(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            DataPackage dataPackage = new DataPackage();
+            var sb = new StringBuilder();
+            for (int i = 0; i < colors.Count; i++)
+            {
+                sb.AppendLine($"    db ${colors[i].EightBitColor:X2}    ; ({i:D2})  ({i:X2})");
+            }
+            dataPackage.SetText(sb.ToString());
+            Clipboard.SetContent(dataPackage);
+        }
+
+        private void Export9BitColorAsm(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            DataPackage dataPackage = new DataPackage();
+            var sb = new StringBuilder();
+            for (int i = 0; i < colors.Count; i++)
+            {
+                sb.AppendLine($"    db ${colors[i].EightBitColor:X2}, ${colors[i].NineBitColor:X2}    ; ({i:D2})  ({i:X2})");
+            }
+            dataPackage.SetText(sb.ToString());
+            Clipboard.SetContent(dataPackage);
         }
     }
 }

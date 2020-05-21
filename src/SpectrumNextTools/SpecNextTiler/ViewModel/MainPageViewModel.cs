@@ -9,6 +9,7 @@ using SpecNextTiler.Models;
 using SpectrumNextTools.Library.Models;
 using Template10.Mvvm;
 using Template10.Navigation;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 
@@ -35,6 +36,13 @@ namespace SpecNextTiler.ViewModel
             set => SetProperty(ref _title, value);
         }
 
+        private bool _isImageLoaded;
+        public bool IsImageLoaded
+        {
+            get => _isImageLoaded;
+            set => SetProperty(ref _isImageLoaded, value);
+        }
+
         private TileSourceImage _tileSourceImage;
         public TileSourceImage TileSourceImage
         {
@@ -50,14 +58,14 @@ namespace SpecNextTiler.ViewModel
         }
 
 
-        private ObservableCollection<SpecColor> colors = new ObservableCollection<SpecColor>(SpecBase256Palette.Colors);
+        private ObservableCollection<WinSpecColor> colors = new ObservableCollection<WinSpecColor>(SpecBase256Palette.Colors);
 
         public MainPageViewModel()
         {
             TileSourceImage = new TileSourceImage();
         }
 
-        public ObservableCollection<SpecColor> Colors
+        public ObservableCollection<WinSpecColor> Colors
         {
             get => this.colors;
             set => SetProperty(ref this.colors, value);
@@ -88,8 +96,10 @@ namespace SpecNextTiler.ViewModel
                 }
                 while(index < 256)
                 {
-                    Colors[index++] = new SpecColor();
+                    Colors[index++] = new WinSpecColor();
                 }
+
+                IsImageLoaded = true;
             }
 
         }
@@ -105,6 +115,18 @@ namespace SpecNextTiler.ViewModel
                 Tile = TileSourceImage.Tiles[_tileIndex];
                 _tileIndex++;
             }
+        }
+
+        public void CopyTiles()
+        {
+            DataPackage dataPackage = new DataPackage();
+            var sb = new StringBuilder();
+            for (int i = 0; i < colors.Count; i++)
+            {
+                sb.AppendLine($"    db ${colors[i].EightBitColor:X2}, ${colors[i].NineBitColor:X2}    ; ({i:D2})  ({i:X2})");
+            }
+            dataPackage.SetText(sb.ToString());
+            Clipboard.SetContent(dataPackage);
         }
     }
 }

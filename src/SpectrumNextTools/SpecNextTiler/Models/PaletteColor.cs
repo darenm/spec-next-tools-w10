@@ -11,7 +11,7 @@ namespace SpecNextTiler.Models
     public class PaletteColor : ViewModelBase
     {
         private Color realColor;
-        private SpecColor specColor;
+        private WinSpecColor specColor;
 
         public Color RealColor
         {
@@ -19,11 +19,11 @@ namespace SpecNextTiler.Models
             set 
             {
                 SetProperty(ref this.realColor, value);
-                SpecColor = new SpecColor(value);
+                SpecColor = new WinSpecColor(value);
             }
         }
 
-        public SpecColor SpecColor 
+        public WinSpecColor SpecColor 
         { 
             get => specColor;
             private set => SetProperty(ref this.specColor, value);

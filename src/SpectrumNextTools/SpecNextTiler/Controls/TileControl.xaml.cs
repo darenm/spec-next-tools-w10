@@ -81,7 +81,7 @@ namespace SpecNextTiler.Controls
 
         private static void OnOrientationChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (d is TileControl tc && e.NewValue is TileOrientation orientation)
+            if (d is TileControl tc && e.NewValue is TileOrientation)
             {
                 tc.RenderTile();
             }
@@ -127,12 +127,11 @@ namespace SpecNextTiler.Controls
                 {
                     for (int row = 0; row < 8; row++)
                     {
-                        SpectrumColorConverter.ConvertToBgra(Tile.Pixels[row, column],
-                                                             out byte a,
+                        SpectrumColorConverter.EightBitToBgr(Tile.Pixels[row, column],
                                                              out byte r,
                                                              out byte g,
                                                              out byte b);
-                        bitmap.SetPixel(column, row, Color.FromArgb(a, r, g, b));
+                        bitmap.SetPixel(column, row, Color.FromArgb(255, r, g, b));
                     }
                 }
 

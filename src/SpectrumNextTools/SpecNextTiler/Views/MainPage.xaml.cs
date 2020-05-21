@@ -39,8 +39,10 @@ namespace SpecNextTiler.Views
 
                 foreach (var tile in ViewModel.TileSourceImage.Tiles)
                 {
-                    var tc = new Controls.TileControl();
-                    tc.Tile = tile;
+                    var tc = new Controls.TileControl
+                    {
+                        Tile = tile
+                    };
                     WrapPanel.Children.Add(tc);
                 }
             });
@@ -77,7 +79,7 @@ namespace SpecNextTiler.Views
                 {
                     if (child is Controls.TileControl tc)
                     {
-                        tc.ApplyOrientation = tb.IsChecked.HasValue? tb.IsChecked.Value : false;
+                        tc.ApplyOrientation = tb.IsChecked ?? false;
                     }
                 }
             }

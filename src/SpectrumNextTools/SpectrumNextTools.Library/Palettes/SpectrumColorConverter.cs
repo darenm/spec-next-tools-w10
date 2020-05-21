@@ -15,13 +15,13 @@ namespace SpectrumNextTools.Library.Palettes
             var g = ConvertHexByte(gHex);
             var b = ConvertHexByte(bHex);
 
-            r = r & 0b1110_0000;
-            g = g & 0b1110_0000;
-            b = b & 0b1110_0000;
+            r &= 0b1110_0000;
+            g &= 0b1110_0000;
+            b &= 0b1110_0000;
 
-            r = r >> 5;
-            g = g >> 5;
-            b = b >> 5;
+            r >>= 5;
+            g >>= 5;
+            b >>= 5;
 
             return $"{r}, {g}, {b}";
         }
@@ -36,16 +36,8 @@ namespace SpectrumNextTools.Library.Palettes
             return int.Parse(hex, System.Globalization.NumberStyles.AllowHexSpecifier);
         }
 
-        public static byte ConvertFromBgr(byte b, byte g, byte r)
+        public static byte EightBitFromBgr(byte b, byte g, byte r)
         {
-            return ConvertFromBgra(b, g, r, 255);
-        }
-
-
-        public static byte ConvertFromBgra(byte b, byte g, byte r, byte a)
-        {
-            // we ignore a
-
             r &= 0b1110_0000;
             g &= 0b1110_0000;
             b &= 0b1110_0000;
@@ -56,16 +48,37 @@ namespace SpectrumNextTools.Library.Palettes
             return (byte)(r + g + b);
         }
 
-        public static void ConvertToBgra(byte spectrumColor,out byte a, out byte r, out byte g, out byte b)
+        public static void NineBitFromBgr(byte b, byte g, byte r, out byte eightBitColor, out byte nineBitColor)
         {
-            // we ignore a
-            a = 255;
-            r = (byte)(0b1110_0000 & spectrumColor);
-            g = (byte)(0b0001_1100 & spectrumColor);
-            b = (byte)(0b0000_0011 & spectrumColor);
+            eightBitColor = EightBitFromBgr(b, g, r);
+            nineBitColor = (byte)((b & 0b0010_0000) >> 5);
+        }
+
+        public static void EightBitToBgr(byte eightBitColor, out byte r, out byte g, out byte b)
+        {
+            r = (byte)(0b1110_0000 & eightBitColor);
+            g = (byte)(0b0001_1100 & eightBitColor);
+            b = (byte)(0b0000_0011 & eightBitColor);
 
             g <<= 3;
             b <<= 6;
+            // third bit of blue color is logical or of bits 1 and 0
+            // therefore if b > 0, then add 64
+            //b += 64;
+
+        }
+
+        public static void NineBitToBgra(byte eightBitColor, byte nineBitColor, out byte a, out byte r, out byte g, out byte b)
+        {
+            // we ignore a
+            a = 255;
+            r = (byte)(0b1110_0000 & eightBitColor);
+            g = (byte)(0b0001_1100 & eightBitColor);
+            b = (byte)(0b0000_0011 & eightBitColor);
+
+            g <<= 3;
+            b <<= 6;
+            b += (byte)(nineBitColor & 0b0000_0001);
         }
     }
 }

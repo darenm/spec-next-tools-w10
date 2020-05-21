@@ -65,6 +65,7 @@ namespace SpectrumNextTools.Library.Models
 
             // rotate always applied first
 
+
             if (rotate)
             {
                 transformedBytes = RotateMatrix(pixels, matrixDimension);

@@ -127,7 +127,7 @@
     </Compile>
     <Compile Include="Models\PaletteColor.cs" />
     <Compile Include="Models\SpecBase256Palette.cs" />
-    <Compile Include="Models\SpecColor.cs" />
+    <Compile Include="Models\WinSpecColor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ViewModel\MainPageViewModel.cs" />
     <Compile Include="ViewModel\TileSourceImage.cs" />

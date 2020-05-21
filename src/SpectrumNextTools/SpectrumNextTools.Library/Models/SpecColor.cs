@@ -1,26 +1,18 @@
 ﻿using SpectrumNextTools.Library.Palettes;
 using System;
-using Template10.Mvvm;
-using Windows.UI;
+using System.Collections.Generic;
+using System.Text;
 
-namespace SpecNextTiler.Models
+namespace SpectrumNextTools.Library.Models
 {
-    public class SpecColor : ViewModelBase, IComparable
+    public class SpecColor
     {
         private readonly byte r;
         private readonly byte g;
         private readonly byte b;
 
         public byte EightBitColor { get; set; }
-
-
-        public Color WinColor
-        {
-            get
-            {
-                return Color.FromArgb(255, R, G, B);
-            }
-        }
+        public byte NineBitColor { get; set; }
 
         public byte R => r;
 
@@ -37,10 +29,7 @@ namespace SpecNextTiler.Models
         public SpecColor(byte specColor)
         {
             EightBitColor = specColor;
-            //r = (byte)(specColor & 0b111_000_00);
-            //g = (byte)((specColor & 0b000_111_00) << 3);
-            //b = (byte)((specColor & 0b111_000_00)<< 6);
-            SpectrumColorConverter.ConvertToBgra(specColor, out _, out r, out g, out b);
+            SpectrumColorConverter.EightBitToBgr(specColor, out r, out g, out b);
         }
 
         public SpecColor(byte r, byte g, byte b)
@@ -49,20 +38,15 @@ namespace SpecNextTiler.Models
             this.b = b;
             this.g = g;
 
-            //EightBitColor = (byte)
-            //    ((r & 0b111_000_00) +
-            //    ((g >> 3) & 0b000_111_00) +
-            //    ((b >> 6) & 0b000_000_11));
-            EightBitColor = SpectrumColorConverter.ConvertFromBgr(b, g, r);
-        }
-
-        public SpecColor(Color c) : this(c.R, c.G, c.B)
-        {
+            //EightBitColor = SpectrumColorConverter.EightBitFromBgr(b, g, r);
+            SpectrumColorConverter.NineBitFromBgr(b, g, r, out byte eightBitColor, out byte nineBitColor);
+            EightBitColor = eightBitColor;
+            NineBitColor = nineBitColor;
         }
 
         public override string ToString()
         {
-            return $"RGB: #{R:X2}{G:X2}{B:X2} SPEC: #{EightBitColor:X2}";
+            return $"RGB: #{R:X2}{G:X2}{B:X2} SPEC: #{EightBitColor:X2} #{NineBitColor:X2}";
         }
 
         public int CompareTo(object obj)

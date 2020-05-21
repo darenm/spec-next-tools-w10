@@ -4,7 +4,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:SpecNextTiler.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:models="using:SpecNextTiler.Models"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:models="using:SpecNextTiler.Models"
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400">
@@ -54,8 +55,11 @@
                 </Setter.Value>
             </Setter>
         </Style>
-        <DataTemplate x:Key="GridViewItemTemplate1" x:DataType="models:SpecColor">
+        <DataTemplate x:Key="GridViewItemTemplate1" x:DataType="models:WinSpecColor">
             <Rectangle Height="24" Width="12">
+                <ToolTipService.ToolTip>
+                    <TextBlock Text="{Binding}" />
+                </ToolTipService.ToolTip>
                 <Rectangle.Fill>
                     <SolidColorBrush Color="{x:Bind Path=WinColor}"/>
                 </Rectangle.Fill>
@@ -159,6 +163,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <StackPanel>
@@ -181,6 +186,10 @@
               SelectedItem="{x:Bind SelectedColor, Mode=TwoWay}"
               Background="Black">
         </GridView>
+        <StackPanel Orientation="Horizontal" Grid.Row="3" HorizontalAlignment="Stretch">
+            <Button Content="Copy 8 bit" HorizontalAlignment="Left" Click="Export8BitColorAsm"/>
+            <Button Content="Copy 9 bit" HorizontalAlignment="Right" Click="Export9BitColorAsm"/>
+        </StackPanel>
     </Grid>
 
 

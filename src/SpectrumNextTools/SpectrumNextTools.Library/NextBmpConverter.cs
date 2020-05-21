@@ -10,7 +10,6 @@ namespace SpectrumNextTools.Library
     {
         private readonly BitmapOptions _bmpOptions;
         private BitmapImage _inBitmap;
-        private BitmapImage _outBitmap;
 
         private bool _createNewFile;
         private bool _updateImageData;
@@ -21,7 +20,6 @@ namespace SpectrumNextTools.Library
         }
 
         public BitmapImage InBitmap => this._inBitmap;
-        public BitmapImage OutBitmap => this._outBitmap;
 
         public void ProcessImage()
         {
