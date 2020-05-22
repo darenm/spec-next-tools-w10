@@ -9,10 +9,15 @@ namespace SpectrumNextTools.Library.Models
 {
     public class Tile : IEquatable<Tile>
     {
-        private const int matrixDimension = 8;
-        private readonly byte[,] pixels = new byte[matrixDimension, matrixDimension]; // byte[x, y]
+        private const int MatrixDimension = 8;
 
-        public byte[,] Pixels => pixels;
+        private List<SpecColor> _assignedPalette; 
+
+        public byte[,] Pixels { get; private set; } = new byte[MatrixDimension, MatrixDimension]; // byte[x, y]
+        public byte[,] ExportBytes { get; private set; } = new byte[MatrixDimension, MatrixDimension / 2]; // byte[x, y]
+
+        public bool PaletteMatched { get; set; }
+        public int MatchedPaletteId { get; set; }
 
         public Tile()
         { }
@@ -24,7 +29,7 @@ namespace SpectrumNextTools.Library.Models
                 throw new ArgumentNullException(nameof(bytes));
             }
 
-            if (bytes.Length != matrixDimension * matrixDimension)
+            if (bytes.Length != MatrixDimension * MatrixDimension)
             {
                 throw new ArgumentOutOfRangeException(nameof(bytes), "bytes array must be 64 in length");
             }
@@ -32,9 +37,9 @@ namespace SpectrumNextTools.Library.Models
             var i = 0;
             foreach (var pixel in bytes)
             {
-                var column = i % matrixDimension;
-                var row = i / matrixDimension;
-                pixels[row, column] = pixel;
+                var column = i % MatrixDimension;
+                var row = i / MatrixDimension;
+                Pixels[row, column] = pixel;
                 i++;
             }
         }
@@ -46,12 +51,12 @@ namespace SpectrumNextTools.Library.Models
                 throw new ArgumentNullException(nameof(bytes));
             }
 
-            if (bytes.Length != matrixDimension * matrixDimension)
+            if (bytes.Length != MatrixDimension * MatrixDimension)
             {
                 throw new ArgumentOutOfRangeException(nameof(bytes), "bytes array must be 64 in length");
             }
 
-            this.pixels = bytes;
+            Pixels = bytes;
         }
 
         public byte[,] ApplyTransform(bool rotate, bool mirrorX, bool mirrorY)
@@ -60,7 +65,7 @@ namespace SpectrumNextTools.Library.Models
 
             if (!rotate && !mirrorX && !mirrorY)
             {
-                return this.pixels;
+                return Pixels;
             }
 
             // rotate always applied first
@@ -68,27 +73,103 @@ namespace SpectrumNextTools.Library.Models
 
             if (rotate)
             {
-                transformedBytes = RotateMatrix(pixels, matrixDimension);
+                transformedBytes = RotateMatrix(Pixels, MatrixDimension);
             }
             else
             {
-                transformedBytes = new byte[matrixDimension, matrixDimension];
-                Array.Copy(pixels, transformedBytes, matrixDimension * matrixDimension);
+                transformedBytes = new byte[MatrixDimension, MatrixDimension];
+                Array.Copy(Pixels, transformedBytes, MatrixDimension * MatrixDimension);
             }
 
             // Now do mirror - order doesn't matter
 
             if (mirrorX)
             {
-                transformedBytes = MirrorXMatrix(transformedBytes, matrixDimension);
+                transformedBytes = MirrorXMatrix(transformedBytes, MatrixDimension);
             }
 
             if (mirrorY)
             {
-                transformedBytes = MirrorYMatrix(transformedBytes, matrixDimension);
+                transformedBytes = MirrorYMatrix(transformedBytes, MatrixDimension);
             }
 
             return transformedBytes;
+        }
+
+        /// <summary>
+        /// Returns the sorted <see cref="SpecColor"/> palette used in the raw image
+        /// </summary>
+        /// <returns></returns>
+        public List<SpecColor> GetPaletteFromTile()
+        {
+            var paletteBytes = new List<byte>();
+            var palette = new List<SpecColor>();
+            foreach (var pixel in Pixels)
+            {
+                if (!paletteBytes.Contains(pixel))
+                {
+                    paletteBytes.Add(pixel);
+                    palette.Add(new SpecColor(pixel));
+                }
+            }
+
+            if (palette.Count > 16)
+            {
+                throw new TileException(this, $"Too many colors - {palette.Count}");
+            }
+
+            palette.Sort();
+
+            return palette;
+        }
+
+        /// <summary>
+        /// Assigns the supplied <paramref name="palette"/> to the <see cref="Tile"/>. This
+        /// <b>does not</b> change the <see cref="Pixels"/> data, but instead populates the
+        /// 
+        /// </summary>
+        /// <param name="paletteId"></param>
+        /// <param name="palette"></param>
+        public void AssignPalette(List<SpecColor> palette)
+        {
+            _assignedPalette = palette;
+
+            // iterate through each byte in Pixels
+            // match the byte to a palette entry - throw if doesn't match!
+            // create nibble that matches the palette entry
+            // combine two adjacent nibbles to a byte and write to 
+
+            Nibble highNibble = null;
+
+            for (var row = 0; row < MatrixDimension; row++)
+            {
+                for (var column = 0; column < MatrixDimension; column++)
+                {
+                    var isHighNibble = column % 2 == 0; // 0 is high, 1 is low
+
+                    var rawSpecColor = new SpecColor(Pixels[row, column]);
+                    var paletteIndex = palette.IndexOf(rawSpecColor);
+                    if (paletteIndex > -1) // found
+                    {
+                        if (isHighNibble)
+                        {
+                            highNibble = new Nibble(paletteIndex);
+                            // do nothing else until the next iteratiion
+                        }
+                        else
+                        {
+                            var lowNibble = new Nibble(paletteIndex);
+                            var exportByte = Nibble.Combine(highNibble, lowNibble);
+                            ExportBytes[row, column / 2] = exportByte;
+                        }
+
+                    }
+                    else
+                    {
+                        throw new TileException(this, "Pixel color not found in palette");
+                    }
+                }
+            }
         }
 
         static byte[,] RotateMatrix(byte[,] matrix, int n)
@@ -139,7 +220,7 @@ namespace SpectrumNextTools.Library.Models
         {
             bool rotate = false, mirrorX = false, mirrorY = false;
 
-            var result = this.Equals(inputTile);
+            var result = Equals(inputTile);
 
             byte[,] mirrorXResult = null; // saving this incase I need it later
 
@@ -149,8 +230,8 @@ namespace SpectrumNextTools.Library.Models
                 rotate = false;
                 mirrorX = true;
                 mirrorY = false;
-                mirrorXResult = MirrorXMatrix(this.pixels, matrixDimension);
-                result = MatchBytes(inputTile.pixels, mirrorXResult);
+                mirrorXResult = MirrorXMatrix(Pixels, MatrixDimension);
+                result = MatchBytes(inputTile.Pixels, mirrorXResult);
             }
 
             // R0 X0 Y1
@@ -159,8 +240,8 @@ namespace SpectrumNextTools.Library.Models
                 rotate = false;
                 mirrorX = false;
                 mirrorY = true;
-                var mirrorYResult = MirrorYMatrix(this.pixels, matrixDimension);
-                result = MatchBytes(inputTile.pixels, mirrorYResult);
+                var mirrorYResult = MirrorYMatrix(Pixels, MatrixDimension);
+                result = MatchBytes(inputTile.Pixels, mirrorYResult);
             }
 
             // R0 X1 Y1
@@ -170,8 +251,8 @@ namespace SpectrumNextTools.Library.Models
                 mirrorX = true;
                 mirrorY = true;
                 // note: y mirror mirrorXResult
-                var mirrorYResult = MirrorYMatrix(mirrorXResult, matrixDimension);
-                result = MatchBytes(inputTile.pixels, mirrorYResult);
+                var mirrorYResult = MirrorYMatrix(mirrorXResult, MatrixDimension);
+                result = MatchBytes(inputTile.Pixels, mirrorYResult);
             }
 
             // now we need to rotate
@@ -184,8 +265,8 @@ namespace SpectrumNextTools.Library.Models
                 mirrorX = false;
                 mirrorY = false;
 
-                rotateResult = RotateMatrix(this.pixels, matrixDimension);
-                result = MatchBytes(inputTile.pixels, rotateResult);
+                rotateResult = RotateMatrix(Pixels, MatrixDimension);
+                result = MatchBytes(inputTile.Pixels, rotateResult);
             }
 
             // R1 X1 Y0
@@ -195,8 +276,8 @@ namespace SpectrumNextTools.Library.Models
                 mirrorX = true;
                 mirrorY = false;
                 // reuse rotate result
-                mirrorXResult = MirrorXMatrix(rotateResult, matrixDimension);
-                result = MatchBytes(inputTile.pixels, mirrorXResult);
+                mirrorXResult = MirrorXMatrix(rotateResult, MatrixDimension);
+                result = MatchBytes(inputTile.Pixels, mirrorXResult);
             }
 
             // R1 X0 Y1
@@ -207,8 +288,8 @@ namespace SpectrumNextTools.Library.Models
                 mirrorY = true;
 
                 // reuse rotate result
-                var mirrorYResult = MirrorYMatrix(rotateResult, matrixDimension);
-                result = MatchBytes(inputTile.pixels, mirrorYResult);
+                var mirrorYResult = MirrorYMatrix(rotateResult, MatrixDimension);
+                result = MatchBytes(inputTile.Pixels, mirrorYResult);
             }
 
             // R1 X1 Y1
@@ -219,8 +300,8 @@ namespace SpectrumNextTools.Library.Models
                 mirrorY = true;
 
                 // note: y mirror mirrorXResult
-                var mirrorYResult = MirrorYMatrix(mirrorXResult, matrixDimension);
-                result = MatchBytes(inputTile.pixels, mirrorYResult);
+                var mirrorYResult = MirrorYMatrix(mirrorXResult, MatrixDimension);
+                result = MatchBytes(inputTile.Pixels, mirrorYResult);
             }
 
             tileOrientation = new TileOrientation(rotate, mirrorX, mirrorY);
@@ -230,11 +311,11 @@ namespace SpectrumNextTools.Library.Models
         public override string ToString()
         {
             var sb = new StringBuilder();
-            for (var i = 0; i < matrixDimension; i++)
+            for (var i = 0; i < MatrixDimension; i++)
             {
-                for (var j = 0; j < matrixDimension; j++)
+                for (var j = 0; j < MatrixDimension; j++)
                 {
-                    sb.Append(string.Format("{0} ", pixels[i, j]));
+                    sb.Append(string.Format("{0} ", Pixels[i, j]));
                 }
                 sb.AppendLine();
             }
@@ -245,12 +326,12 @@ namespace SpectrumNextTools.Library.Models
         public override bool Equals(object obj)
         {
             var item = obj as Tile;
-            return this.Equals(item);
+            return Equals(item);
         }
 
         public override int GetHashCode()
         {
-            return pixels.GetHashCode();
+            return Pixels.GetHashCode();
         }
 
         public bool Equals(Tile other)
@@ -265,19 +346,19 @@ namespace SpectrumNextTools.Library.Models
                 return true;
             }
 
-            if (other.pixels.Length != this.pixels.Length)
+            if (other.Pixels.Length != Pixels.Length)
             {
                 return false;
             }
 
-            return MatchBytes(this.pixels, other.pixels);
+            return MatchBytes(Pixels, other.Pixels);
         }
 
         private static bool MatchBytes(byte[,] array1, byte[,] array2)
         {
-            for (int row = 0; row < matrixDimension; row++)
+            for (int row = 0; row < MatrixDimension; row++)
             {
-                for (int column = 0; column < matrixDimension; column++)
+                for (int column = 0; column < MatrixDimension; column++)
                 {
                     if (array1[row, column] != array2[row, column])
                     {

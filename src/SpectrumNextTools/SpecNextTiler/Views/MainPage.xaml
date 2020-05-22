@@ -31,10 +31,12 @@
                         </Style>
                     </StackPanel.Resources>
                     <Button Content="Open Tile Source" Click="{x:Bind ViewModel.OpenTileImage}"/>
-                    <Button Content="Show Tiles" Click="ShowTiles" IsEnabled="{x:Bind ViewModel.IsImageLoaded, Mode=OneWay}" />
-                    <Button Content="Show Tile Map" Click="ShowTileMap" IsEnabled="{x:Bind ViewModel.IsImageLoaded, Mode=OneWay}"/>
-                    <ToggleButton Content="Apply Orientation" Click="ToggleButton_Click" IsChecked="True"  IsEnabled="{x:Bind ViewModel.IsImageLoaded, Mode=OneWay}"/>
-                    <Button Content="Copy Tiles" Click="{x:Bind ViewModel.CopyTiles}" IsEnabled="{x:Bind ViewModel.IsImageLoaded, Mode=OneWay}"/>
+                    <Button Content="Generate ASM Palette" Click="{x:Bind ViewModel.GeneratePalette}" IsEnabled="{x:Bind ViewModel.IsImageLoaded, Mode=OneWay}"/>
+                    <Button Content="Show Tiles" Click="ShowTiles" IsEnabled="{x:Bind ViewModel.IsPaletteMapped, Mode=OneWay}" />
+                    <Button Content="Show Tile Map" Click="ShowTileMap" IsEnabled="{x:Bind ViewModel.IsPaletteMapped, Mode=OneWay}"/>
+                    <Button Content="Copy Tiles" Click="{x:Bind ViewModel.CopyTiles}" IsEnabled="{x:Bind ViewModel.IsPaletteMapped, Mode=OneWay}"/>
+                    <Button Content="Copy Map" Click="{x:Bind ViewModel.CopyMap}" IsEnabled="{x:Bind ViewModel.IsPaletteMapped, Mode=OneWay}"/>
+                    <ToggleButton Content="Apply Orientation" Click="ToggleButton_Click" IsChecked="True"  IsEnabled="{x:Bind ViewModel.IsPaletteMapped, Mode=OneWay}"/>
                 </StackPanel>
             </Grid>
             <Grid x:Name="PixelSurface">

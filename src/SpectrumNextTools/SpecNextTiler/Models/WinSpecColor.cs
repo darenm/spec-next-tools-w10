@@ -37,5 +37,10 @@ namespace SpecNextTiler.Models
         {
             return $"RGB: #{R:X2}{G:X2}{B:X2} SPEC: #{EightBitColor:X2} #{NineBitColor:X2}";
         }
+
+        public static WinSpecColor ConvertFrom(SpecColor s)
+        {
+            return new WinSpecColor(s.EightBitColor);
+        }
     }
 }

@@ -50,14 +50,6 @@ namespace SpecNextTiler.ViewModel
             set => SetProperty(ref _tileSourceImage, value);
         }
 
-        private Tile _tile;
-        public Tile Tile
-        {
-            get => _tile;
-            set => SetProperty(ref _tile, value);
-        }
-
-
         private ObservableCollection<WinSpecColor> colors = new ObservableCollection<WinSpecColor>(SpecBase256Palette.Colors);
 
         public MainPageViewModel()
@@ -69,6 +61,13 @@ namespace SpecNextTiler.ViewModel
         {
             get => this.colors;
             set => SetProperty(ref this.colors, value);
+        }
+
+        private bool _isPaletteMapped;
+        public bool IsPaletteMapped
+        {
+            get => _isPaletteMapped;
+            set => SetProperty(ref _isPaletteMapped, value);
         }
 
         public async void OpenTileImage()
@@ -94,7 +93,7 @@ namespace SpecNextTiler.ViewModel
                 {
                     Colors[index++] = color;
                 }
-                while(index < 256)
+                while (index < 256)
                 {
                     Colors[index++] = new WinSpecColor();
                 }
@@ -104,29 +103,156 @@ namespace SpecNextTiler.ViewModel
 
         }
 
-        public void ShowTileOne()
-        {
-            if (TileSourceImage.Tiles != null && TileSourceImage.Tiles.Count > 0)
-            {
-                if (_tileIndex >= TileSourceImage.Tiles.Count)
-                {
-                    _tileIndex = 0;
-                }
-                Tile = TileSourceImage.Tiles[_tileIndex];
-                _tileIndex++;
-            }
-        }
-
         public void CopyTiles()
         {
             DataPackage dataPackage = new DataPackage();
             var sb = new StringBuilder();
-            for (int i = 0; i < colors.Count; i++)
+            for(var tileIndex = 0; tileIndex < TileSourceImage.Tiles.Count; tileIndex++)
             {
-                sb.AppendLine($"    db ${colors[i].EightBitColor:X2}, ${colors[i].NineBitColor:X2}    ; ({i:D2})  ({i:X2})");
+                sb.AppendLine($"; {tileIndex:X2}");
+
+                for (int row = 0; row < 8; row++)
+                {
+                    var tile = TileSourceImage.Tiles[tileIndex];
+                    sb.AppendLine($"    db ${tile.ExportBytes[row, 0]:X2}, ${tile.ExportBytes[row, 1]:X2}, ${tile.ExportBytes[row, 2]:X2}, ${tile.ExportBytes[row, 3]:X2}");
+                }
+
+                sb.AppendLine();
             }
+
             dataPackage.SetText(sb.ToString());
             Clipboard.SetContent(dataPackage);
         }
+
+        public void CopyMap()
+        {
+            // 1 screen is 32 rows of 40 tiles
+            DataPackage dataPackage = new DataPackage();
+            var sb = new StringBuilder();
+            var rowOffset = 0;
+
+            for (int row = 0 + rowOffset; row < 32 + rowOffset; row++)
+            {
+                var firstItem = true;
+                sb.Append("    db ");
+                for (int column = 0; column < 40; column++)
+                {
+                    if (firstItem)
+                    {
+                        firstItem = false;
+                    }
+                    else
+                    {
+                        sb.Append("  ,");
+                    }
+                    var tileMapEntry = TileSourceImage.TileMap[row, column];
+                    var tile = TileSourceImage.Tiles[tileMapEntry.Index];
+                    var extendedAttribute = FormatExtendedByte(tile.MatchedPaletteId, tileMapEntry.Orientation, tileMapEntry.Index);
+                    var eightBitTileIndex = tileMapEntry.Index & 0xFF;
+                    sb.Append($"${eightBitTileIndex:X2},${extendedAttribute:X2}");
+                }
+                sb.AppendLine();
+            }
+
+
+            dataPackage.SetText(sb.ToString());
+            Clipboard.SetContent(dataPackage);
+
+            byte FormatExtendedByte(int paletteId, TileOrientation orientation, int tileIndex)
+            {
+                byte extendedByte = 0;
+
+                extendedByte += (byte)((paletteId & 0b0000_1111) << 4);
+                if (orientation.MirrorX)
+                {
+                    extendedByte += 0b0000_1000;
+                }
+
+                if (orientation.MirrorY)
+                {
+                    extendedByte += 0b0000_0100;
+                }
+
+                if (orientation.Rotate)
+                {
+                    extendedByte += 0b0000_0010;
+                }
+
+                if (tileIndex > 255)
+                {
+                    extendedByte += 1;
+                }
+
+                return extendedByte;
+            }
+        }
+
+        public void GeneratePalette()
+        {
+            // get the palette for each tile
+            var palettes = new List<List<SpecColor>>();
+            foreach (var (tile, tilePalette) in
+            // create the minimum number of 15 color palettes that support the tiles
+            from tile in TileSourceImage.Tiles
+            let tilePalette = tile.GetPaletteFromTile()
+            select (tile, tilePalette))
+            {
+                tile.PaletteMatched = false;
+                for (int paletteIndex = 0; paletteIndex < palettes.Count; paletteIndex++)
+                {
+                    var palette = palettes[paletteIndex];
+                    var missingColors = tilePalette.Except(palette).ToList();
+                    if (missingColors.Any())
+                    {
+                        if (ListFits(palette, missingColors))
+                        {
+                            palette.AddRange(missingColors);
+                            tile.MatchedPaletteId = paletteIndex;
+                            tile.PaletteMatched = true;
+                            break; // no need to look at another palette
+                        }
+
+                        // otherwise we check the next palette
+                    }
+                    else
+                    {
+                        tile.PaletteMatched = true;
+                        tile.MatchedPaletteId = paletteIndex;
+                    }
+                }
+
+                if (!tile.PaletteMatched)
+                {
+                    // we must create a new palette and add the **entire** tile palette
+                    var newPalette = new List<SpecColor>();
+                    newPalette.AddRange(tilePalette);
+                    palettes.Add(newPalette);
+                    tile.PaletteMatched = true;
+                    tile.MatchedPaletteId = palettes.Count - 1;
+                }
+            }
+
+            palettes.ForEach(p => p.Sort());
+
+            // create palette color mapping for each tile
+            TileSourceImage.Tiles.ForEach(t => t.AssignPalette(palettes[t.MatchedPaletteId]));
+
+            // Update displayed palette
+            var index = 0;
+            palettes.ForEach(p => p.ForEach(c => Colors[index++] = WinSpecColor.ConvertFrom(c)));
+            while (index < 256)
+            {
+                Colors[index++] = new WinSpecColor();
+            }
+
+            bool ListFits(List<SpecColor> palette, List<SpecColor> missingColors)
+            {
+                return palette.Count + missingColors.Count <= 16;
+            }
+
+            IsPaletteMapped = true;
+        }
+
+
     }
 }
