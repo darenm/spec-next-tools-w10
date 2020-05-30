@@ -17,23 +17,12 @@ namespace SpecNextTiler.ViewModel
 {
     public class MainPageViewModel : ViewModelBase
     {
-        private int _tileIndex = 0;
-
         public override void OnNavigatedTo(INavigationParameters parameters)
         {
-            Title = "Hello run-time world.";
         }
 
         public override void OnNavigatedFrom(INavigationParameters parameters)
         {
-            // empty
-        }
-
-        private string _title;
-        public string Title
-        {
-            get => _title;
-            set => SetProperty(ref _title, value);
         }
 
         private bool _isImageLoaded;
@@ -107,7 +96,7 @@ namespace SpecNextTiler.ViewModel
         {
             DataPackage dataPackage = new DataPackage();
             var sb = new StringBuilder();
-            for(var tileIndex = 0; tileIndex < TileSourceImage.Tiles.Count; tileIndex++)
+            for (var tileIndex = 0; tileIndex < TileSourceImage.Tiles.Count; tileIndex++)
             {
                 sb.AppendLine($"; {tileIndex:X2}");
 
@@ -191,13 +180,15 @@ namespace SpecNextTiler.ViewModel
         {
             // get the palette for each tile
             var palettes = new List<List<SpecColor>>();
+
+            List<Tile> tiles = TileSourceImage.Tiles;
             foreach (var (tile, tilePalette) in
-            // create the minimum number of 15 color palettes that support the tiles
-            from tile in TileSourceImage.Tiles
+            // create the minimum number of 16 color palettes that support the tiles
+            from tile in tiles
             let tilePalette = tile.GetPaletteFromTile()
             select (tile, tilePalette))
             {
-                tile.PaletteMatched = false;
+                tile.IsPaletteMatched = false;
                 for (int paletteIndex = 0; paletteIndex < palettes.Count; paletteIndex++)
                 {
                     var palette = palettes[paletteIndex];
@@ -208,7 +199,7 @@ namespace SpecNextTiler.ViewModel
                         {
                             palette.AddRange(missingColors);
                             tile.MatchedPaletteId = paletteIndex;
-                            tile.PaletteMatched = true;
+                            tile.IsPaletteMatched = true;
                             break; // no need to look at another palette
                         }
 
@@ -216,18 +207,23 @@ namespace SpecNextTiler.ViewModel
                     }
                     else
                     {
-                        tile.PaletteMatched = true;
+                        tile.IsPaletteMatched = true;
                         tile.MatchedPaletteId = paletteIndex;
                     }
                 }
 
-                if (!tile.PaletteMatched)
+                if (!tile.IsPaletteMatched)
                 {
                     // we must create a new palette and add the **entire** tile palette
-                    var newPalette = new List<SpecColor>();
+                    var newPalette = new List<SpecColor>
+                    {
+                        // every new palette has to have a transparent color at zero
+                        // so we will add BLACK
+                        new SpecColor(0, 0, 0)
+                    };
                     newPalette.AddRange(tilePalette);
                     palettes.Add(newPalette);
-                    tile.PaletteMatched = true;
+                    tile.IsPaletteMatched = true;
                     tile.MatchedPaletteId = palettes.Count - 1;
                 }
             }
@@ -235,11 +231,11 @@ namespace SpecNextTiler.ViewModel
             palettes.ForEach(p => p.Sort());
 
             // create palette color mapping for each tile
-            TileSourceImage.Tiles.ForEach(t => t.AssignPalette(palettes[t.MatchedPaletteId]));
+            tiles.ForEach(t => t.AssignPalette(palettes[t.MatchedPaletteId]));
 
             // Update displayed palette
             var index = 0;
-            palettes.ForEach(p => p.ForEach(c => Colors[index++] = WinSpecColor.ConvertFrom(c)));
+            palettes.ForEach(p => p.ForEach(c => { if (index < 256) Colors[index++] = WinSpecColor.ConvertFrom(c); }));
             while (index < 256)
             {
                 Colors[index++] = new WinSpecColor();
@@ -252,7 +248,5 @@ namespace SpecNextTiler.ViewModel
 
             IsPaletteMapped = true;
         }
-
-
     }
 }

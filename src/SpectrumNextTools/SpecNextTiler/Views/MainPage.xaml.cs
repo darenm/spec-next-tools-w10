@@ -37,6 +37,7 @@ namespace SpecNextTiler.Views
             {
                 WrapPanel.Children.Clear();
 
+                WrapPanel.Width = 16 * 8;
                 foreach (var tile in ViewModel.TileSourceImage.Tiles)
                 {
                     var tc = new Controls.TileControl
@@ -56,6 +57,7 @@ namespace SpecNextTiler.Views
                 WrapPanel.Children.Clear();
 
                 var tileMap = ViewModel.TileSourceImage.TileMap;
+                WrapPanel.Width = tileMap.Width * 8;
 
                 for (int row = 0; row < tileMap.Height; row++)
                 {

@@ -10,13 +10,12 @@ namespace SpectrumNextTools.Library.Models
     public class Tile : IEquatable<Tile>
     {
         private const int MatrixDimension = 8;
-
-        private List<SpecColor> _assignedPalette; 
+        private List<SpecColor> _assignedPalette;
 
         public byte[,] Pixels { get; private set; } = new byte[MatrixDimension, MatrixDimension]; // byte[x, y]
         public byte[,] ExportBytes { get; private set; } = new byte[MatrixDimension, MatrixDimension / 2]; // byte[x, y]
 
-        public bool PaletteMatched { get; set; }
+        public bool IsPaletteMatched { get; set; }
         public int MatchedPaletteId { get; set; }
 
         public Tile()
@@ -308,20 +307,20 @@ namespace SpectrumNextTools.Library.Models
             return result;
         }
 
-        public override string ToString()
-        {
-            var sb = new StringBuilder();
-            for (var i = 0; i < MatrixDimension; i++)
-            {
-                for (var j = 0; j < MatrixDimension; j++)
-                {
-                    sb.Append(string.Format("{0} ", Pixels[i, j]));
-                }
-                sb.AppendLine();
-            }
-            return sb.ToString();
+        //public override string ToString()
+        //{
+        //    var sb = new StringBuilder();
+        //    for (var i = 0; i < MatrixDimension; i++)
+        //    {
+        //        for (var j = 0; j < MatrixDimension; j++)
+        //        {
+        //            sb.Append(string.Format("{0} ", Pixels[i, j]));
+        //        }
+        //        sb.AppendLine();
+        //    }
+        //    return sb.ToString();
 
-        }
+        //}
 
         public override bool Equals(object obj)
         {
