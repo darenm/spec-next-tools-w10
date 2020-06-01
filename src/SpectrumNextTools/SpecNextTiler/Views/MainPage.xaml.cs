@@ -29,6 +29,7 @@ namespace SpecNextTiler.Views
         public MainPage()
         {
             this.InitializeComponent();
+            Loaded += (s,e) => ViewModel.Dispatcher = this.Dispatcher;
         }
 
         private async void ShowTiles(object sender, RoutedEventArgs e)
@@ -52,6 +53,7 @@ namespace SpecNextTiler.Views
 
         private async void ShowTileMap(object sender, RoutedEventArgs e)
         {
+            ViewModel.AddLogEntry("Show Tile Map");
             await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
             {
                 WrapPanel.Children.Clear();

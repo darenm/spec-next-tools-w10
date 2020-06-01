@@ -39,6 +39,9 @@
                     <ToggleButton Content="Apply Orientation" Click="ToggleButton_Click" IsChecked="True"  IsEnabled="{x:Bind ViewModel.IsPaletteMapped, Mode=OneWay}"/>
                 </StackPanel>
             </Grid>
+            <Grid controls1:DockPanel.Dock="Bottom" Padding="6" Height="150" RequestedTheme="Dark">
+                <TextBox IsReadOnly="True" Text="{x:Bind ViewModel.LogText, Mode=OneWay}" />
+            </Grid>
             <Grid x:Name="PixelSurface">
                 <Grid.RowDefinitions>
                     <RowDefinition/>

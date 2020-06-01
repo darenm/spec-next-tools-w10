@@ -12,6 +12,7 @@ using Template10.Navigation;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 using Windows.Storage.Pickers;
+using Windows.UI.Core;
 
 namespace SpecNextTiler.ViewModel
 {
@@ -30,6 +31,13 @@ namespace SpecNextTiler.ViewModel
         {
             get => _isImageLoaded;
             set => SetProperty(ref _isImageLoaded, value);
+        }
+
+        private string _logText;
+        public string LogText
+        {
+            get => _logText;
+            set => SetProperty(ref _logText, value);
         }
 
         private TileSourceImage _tileSourceImage;
@@ -59,6 +67,18 @@ namespace SpecNextTiler.ViewModel
             set => SetProperty(ref _isPaletteMapped, value);
         }
 
+        internal void AddLogEntry(string entry)
+        {
+            // TODO: Implement logger
+            //if (Dispatcher.HasThreadAccess)
+            //{
+            //    var sb = new StringBuilder(LogText);
+            //    sb.AppendLine
+            //}
+        }
+
+        public CoreDispatcher Dispatcher { get; internal set; }
+
         public async void OpenTileImage()
         {
             FileOpenPicker openPicker = new FileOpenPicker
@@ -74,20 +94,23 @@ namespace SpecNextTiler.ViewModel
             StorageFile file = await openPicker.PickSingleFileAsync();
             if (file != null)
             {
-                // Application now has read/write access to the picked file
-                TileSourceImage = new TileSourceImage();
-                await TileSourceImage.LoadImageFromFileAsync(file);
-                var index = 0;
-                foreach (var color in TileSourceImage.SortedColors)
+                await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
                 {
-                    Colors[index++] = color;
-                }
-                while (index < 256)
-                {
-                    Colors[index++] = new WinSpecColor();
-                }
+                    // Application now has read/write access to the picked file
+                    TileSourceImage = new TileSourceImage();
+                    await TileSourceImage.LoadImageFromFileAsync(file);
+                    var index = 0;
+                    foreach (var color in TileSourceImage.SortedColors)
+                    {
+                        Colors[index++] = color;
+                    }
+                    while (index < 256)
+                    {
+                        Colors[index++] = new WinSpecColor();
+                    }
 
-                IsImageLoaded = true;
+                    IsImageLoaded = true;
+                });
             }
 
         }
