@@ -17,6 +17,9 @@
                           LastChildFill="True" 
                           Margin="2" 
                           Padding="0,0,0,0">
+            <Grid controls1:DockPanel.Dock="Bottom" Padding="6" Height="150" RequestedTheme="Dark">
+                <controls:LogControl Log="{x:Bind ViewModel.LogView, Mode=OneWay}" />
+            </Grid>
             <Grid Width="260" controls1:DockPanel.Dock="Right" Padding="12">
                 <controls:PaletteControl Colors="{x:Bind ViewModel.Colors, Mode=OneWay}"/>
             </Grid>
@@ -31,16 +34,14 @@
                         </Style>
                     </StackPanel.Resources>
                     <Button Content="Open Tile Source" Click="{x:Bind ViewModel.OpenTileImage}"/>
-                    <Button Content="Generate ASM Palette" Click="{x:Bind ViewModel.GeneratePalette}" IsEnabled="{x:Bind ViewModel.IsImageLoaded, Mode=OneWay}"/>
+                    <!--<Button Content="Generate ASM Palette" Click="{x:Bind ViewModel.GeneratePalette}" IsEnabled="{x:Bind ViewModel.IsImageLoaded, Mode=OneWay}"/>-->
                     <Button Content="Show Tiles" Click="ShowTiles" IsEnabled="{x:Bind ViewModel.IsPaletteMapped, Mode=OneWay}" />
                     <Button Content="Show Tile Map" Click="ShowTileMap" IsEnabled="{x:Bind ViewModel.IsPaletteMapped, Mode=OneWay}"/>
                     <Button Content="Copy Tiles" Click="{x:Bind ViewModel.CopyTiles}" IsEnabled="{x:Bind ViewModel.IsPaletteMapped, Mode=OneWay}"/>
+                    <CheckBox>40x32 Only</CheckBox>
                     <Button Content="Copy Map" Click="{x:Bind ViewModel.CopyMap}" IsEnabled="{x:Bind ViewModel.IsPaletteMapped, Mode=OneWay}"/>
                     <ToggleButton Content="Apply Orientation" Click="ToggleButton_Click" IsChecked="True"  IsEnabled="{x:Bind ViewModel.IsPaletteMapped, Mode=OneWay}"/>
                 </StackPanel>
-            </Grid>
-            <Grid controls1:DockPanel.Dock="Bottom" Padding="6" Height="150" RequestedTheme="Dark">
-                <TextBox IsReadOnly="True" Text="{x:Bind ViewModel.LogText, Mode=OneWay}" />
             </Grid>
             <Grid x:Name="PixelSurface">
                 <Grid.RowDefinitions>

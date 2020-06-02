@@ -33,11 +33,11 @@ namespace SpecNextTiler.ViewModel
             set => SetProperty(ref _isImageLoaded, value);
         }
 
-        private string _logText;
-        public string LogText
+        private bool _isOneScreenOnly;
+        public bool IsOneScreenOnly
         {
-            get => _logText;
-            set => SetProperty(ref _logText, value);
+            get => _isOneScreenOnly;
+            set => SetProperty(ref _isOneScreenOnly, value);
         }
 
         private TileSourceImage _tileSourceImage;
@@ -47,11 +47,19 @@ namespace SpecNextTiler.ViewModel
             set => SetProperty(ref _tileSourceImage, value);
         }
 
+        private LogViewModel _logView;
+        public LogViewModel LogView
+        {
+            get => _logView;
+            set => SetProperty(ref _logView, value);
+        }
+
         private ObservableCollection<WinSpecColor> colors = new ObservableCollection<WinSpecColor>(SpecBase256Palette.Colors);
 
         public MainPageViewModel()
         {
             TileSourceImage = new TileSourceImage();
+            LogView = new LogViewModel();
         }
 
         public ObservableCollection<WinSpecColor> Colors
@@ -65,16 +73,6 @@ namespace SpecNextTiler.ViewModel
         {
             get => _isPaletteMapped;
             set => SetProperty(ref _isPaletteMapped, value);
-        }
-
-        internal void AddLogEntry(string entry)
-        {
-            // TODO: Implement logger
-            //if (Dispatcher.HasThreadAccess)
-            //{
-            //    var sb = new StringBuilder(LogText);
-            //    sb.AppendLine
-            //}
         }
 
         public CoreDispatcher Dispatcher { get; internal set; }
@@ -96,9 +94,14 @@ namespace SpecNextTiler.ViewModel
             {
                 await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
                 {
+                    LogView.AddLogEntry($"Opening {file.DisplayName}");
                     // Application now has read/write access to the picked file
                     TileSourceImage = new TileSourceImage();
                     await TileSourceImage.LoadImageFromFileAsync(file);
+
+                    LogView.AddLogEntry($"{TileSourceImage.Tiles.Count} tile{(TileSourceImage.Tiles.Count == 1 ? string.Empty : "s")}");
+                    LogView.AddLogEntry($"Tile Map width: {TileSourceImage.TileMap.Width}, height: {TileSourceImage.TileMap.Height}");
+                    LogView.AddLogEntry($"Tile Map size: {TileSourceImage.TileMap.Width * TileSourceImage.TileMap.Height * 2}Kb");
                     var index = 0;
                     foreach (var color in TileSourceImage.SortedColors)
                     {
@@ -110,6 +113,8 @@ namespace SpecNextTiler.ViewModel
                     }
 
                     IsImageLoaded = true;
+
+                    GeneratePalette();
                 });
             }
 
@@ -143,11 +148,14 @@ namespace SpecNextTiler.ViewModel
             var sb = new StringBuilder();
             var rowOffset = 0;
 
-            for (int row = 0 + rowOffset; row < 32 + rowOffset; row++)
+            var maxRows = IsOneScreenOnly ? 32 : TileSourceImage.TileMap.Height;
+            var maxColumns = IsOneScreenOnly ? 42 : TileSourceImage.TileMap.Width;
+
+            for (int row = 0 + rowOffset; row < maxRows + rowOffset; row++)
             {
                 var firstItem = true;
                 sb.Append("    db ");
-                for (int column = 0; column < 40; column++)
+                for (int column = 0; column < maxColumns; column++)
                 {
                     if (firstItem)
                     {
@@ -252,6 +260,8 @@ namespace SpecNextTiler.ViewModel
             }
 
             palettes.ForEach(p => p.Sort());
+
+            LogView.AddLogEntry($"{palettes.Count} palette{(palettes.Count == 1 ? string.Empty : "s")}");
 
             // create palette color mapping for each tile
             tiles.ForEach(t => t.AssignPalette(palettes[t.MatchedPaletteId]));

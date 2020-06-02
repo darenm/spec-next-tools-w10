@@ -34,11 +34,14 @@ namespace SpecNextTiler.Views
 
         private async void ShowTiles(object sender, RoutedEventArgs e)
         {
+            ViewModel.LogView.AddLogEntry("Show Tiles");
+
             await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
             {
                 WrapPanel.Children.Clear();
 
                 WrapPanel.Width = 16 * 8;
+                ViewModel.LogView.AddLogEntry($"Tiles: {ViewModel.TileSourceImage.Tiles.Count}");
                 foreach (var tile in ViewModel.TileSourceImage.Tiles)
                 {
                     var tc = new Controls.TileControl
@@ -53,12 +56,13 @@ namespace SpecNextTiler.Views
 
         private async void ShowTileMap(object sender, RoutedEventArgs e)
         {
-            ViewModel.AddLogEntry("Show Tile Map");
+            ViewModel.LogView.AddLogEntry("Show Tile Map");
             await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
             {
                 WrapPanel.Children.Clear();
 
                 var tileMap = ViewModel.TileSourceImage.TileMap;
+                ViewModel.LogView.AddLogEntry($"Width: {tileMap.Width}, Height: {tileMap.Height}");
                 WrapPanel.Width = tileMap.Width * 8;
 
                 for (int row = 0; row < tileMap.Height; row++)
